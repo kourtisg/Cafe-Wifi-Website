@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mb-4">
+  <h1 class="fw-bold">Find a cafe to work from</h1>
+  <p class="lead text-muted">Cafes in London with wifi, power sockets and good coffee.</p>
+</div>
+
+<form method="get" action="{{ url_for('home') }}" class="row g-2 justify-content-center mb-4">
+  <div class="col-auto">
+    <select name="location" class="form-select" onchange="this.form.submit()">
+      <option value="">All locations</option>
+      {% for location in locations %}
+        <option value="{{ location }}" {% if location == selected %}selected{% endif %}>{{ location }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-outline-secondary">Filter</button>
+  </div>
+</form>
+
+<p class="text-muted">{{ cafes | length }} cafe{{ "" if cafes | length == 1 else "s" }} found</p>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  {% for cafe in cafes %}
+    {% set amenities = [
+      (cafe.has_wifi, "wifi", "Wifi"),
+      (cafe.has_sockets, "plug", "Sockets"),
+      (cafe.has_toilet, "badge-wc", "Toilet"),
+      (cafe.can_take_calls, "telephone", "Calls"),
+    ] %}
+    <div class="col">
+      <div class="card h-100 shadow-sm cafe-card">
+        <img src="{{ cafe.img_url }}" class="card-img-top" alt="{{ cafe.name }}" loading="lazy"
+             onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/no-image.svg') }}';">
+        <div class="card-body">
+          <h5 class="card-title mb-1">{{ cafe.name }}</h5>
+          <p class="text-muted mb-3"><i class="bi bi-geo-alt"></i> {{ cafe.location }}</p>
+
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for available, icon, label in amenities %}
+              <span class="badge {{ 'text-bg-success' if available else 'text-bg-light text-decoration-line-through' }}">
+                <i class="bi bi-{{ icon }}"></i> {{ label }}
+              </span>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <span><i class="bi bi-people"></i> {{ cafe.seats or "?" }} seats</span>
+            <span class="fw-bold"><i class="bi bi-cup-hot"></i> {{ cafe.coffee_price or "n/a" }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer bg-white">
+          <form method="post" action="{{ url_for('update_price', cafe_id=cafe.id, location=selected or None) }}" class="input-group input-group-sm mb-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <span class="input-group-text">£</span>
+            <input type="number" name="coffee_price" step="0.01" min="0" required class="form-control"
+                   value="{{ (cafe.coffee_price or '') | replace('£', '') }}" aria-label="New coffee price">
+            <button type="submit" class="btn btn-outline-primary">Update price</button>
+          </form>
+
+          <div class="d-flex justify-content-between">
+            <a href="{{ cafe.map_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-coffee">
+              <i class="bi bi-map"></i> Map
+            </a>
+            <form method="post" action="{{ url_for('delete_cafe', cafe_id=cafe.id, location=selected or None) }}"
+                  data-name="{{ cafe.name }}" onsubmit="return confirm('Delete ' + this.dataset.name + '?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="col-12">
+      <p class="text-center text-muted mb-0">No cafes found.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

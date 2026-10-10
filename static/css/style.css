@@ -1,0 +1,39 @@
+:root {
+  --coffee: #6f4e37;
+  --coffee-dark: #5a3e2b;
+}
+
+body {
+  background-color: #faf7f2;
+}
+
+.bg-coffee {
+  background-color: var(--coffee);
+}
+
+.btn-coffee {
+  background-color: var(--coffee);
+  border-color: var(--coffee);
+  color: #fff;
+}
+
+.btn-coffee:hover {
+  background-color: var(--coffee-dark);
+  border-color: var(--coffee-dark);
+  color: #fff;
+}
+
+.cafe-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cafe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+}
+
+.cafe-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+  background-color: #e9e2d8;
+}
